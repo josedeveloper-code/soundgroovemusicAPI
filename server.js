@@ -18,3 +18,9 @@ async function startServer() {
 }
 
 startServer();
+
+
+const port = process.env.PORT || 10000; // Render default is 10000,
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
