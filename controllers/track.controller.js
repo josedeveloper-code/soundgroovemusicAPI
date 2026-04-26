@@ -55,7 +55,7 @@ exports.getTrackById = async (req, res) => {
   }
 };
 
-// UPDATE a track
+//// UPDATE a track
 exports.updateTrack = async (req, res) => {
   try {
     const track = await Track.findByPk(req.params.id);
@@ -64,26 +64,17 @@ exports.updateTrack = async (req, res) => {
       return res.status(404).json({ error: "Track not found" });
     }
 
+    // NEW: If they are trying to update the artist, make sure the new artist exists
+    if (req.body.artistId) {
+      const artist = await Artist.findByPk(req.body.artistId);
+      if (!artist) {
+        return res.status(404).json({ error: "New Artist ID not found" });
+      }
+    }
+
     await track.update(req.body);
 
     res.json(track);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// DELETE a track
-exports.deleteTrack = async (req, res) => {
-  try {
-    const track = await Track.findByPk(req.params.id);
-
-    if (!track) {
-      return res.status(404).json({ error: "Track not found" });
-    }
-
-    await track.destroy();
-
-    res.json({ message: "Track deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
