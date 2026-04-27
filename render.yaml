@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: soundgroove-music-api
+    env: node
+    plan: free
+    nodeVersion: 24.14.1
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true

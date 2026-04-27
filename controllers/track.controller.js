@@ -1,81 +1,115 @@
-const { Track, Artist } = require("../models");
+const { Track, Artist } = require('../models');
+const { Op } = require('sequelize');
 
-// CREATE a new track
-exports.createTrack = async (req, res) => {
+const getTracks = async (req, res) => {
   try {
-    const { title, duration, genre, releaseDate, artistId } = req.body;
+    const { genre, search, limit = 20, offset = 0 } = req.query;
+    const whereClause = {};
 
-    // Check if artist exists
-    const artist = await Artist.findByPk(artistId);
-    if (!artist) {
-      return res.status(404).json({ error: "Artist not found" });
-    }
+    if (genre) whereClause.genre = genre;
+    if (search) whereClause.title = { [Op.like]: `%${search}%` };
 
-    const track = await Track.create({
-      title,
-      duration,
-      genre,
-      releaseDate,
-      artistId
+    const tracks = await Track.findAndCountAll({
+      where: whereClause,
+      include: [{ model: Artist, as: 'artist' }],
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      order: [['createdAt', 'DESC']]
     });
 
-    res.status(201).json(track);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(200).json({
+      totalItems: tracks.count,
+      totalPages: Math.ceil(tracks.count / limit),
+      currentPage: Math.floor(offset / limit) + 1,
+      data: tracks.rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-// GET all tracks
-exports.getTracks = async (req, res) => {
-  try {
-    const tracks = await Track.findAll({
-      include: { model: Artist, as: "artist" }
-    });
-
-    res.json(tracks);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// GET one track by ID
-exports.getTrackById = async (req, res) => {
+const getTrackById = async (req, res) => {
   try {
     const track = await Track.findByPk(req.params.id, {
-      include: { model: Artist, as: "artist" }
+      include: [{ model: Artist, as: 'artist' }]
     });
 
     if (!track) {
-      return res.status(404).json({ error: "Track not found" });
+      return res.status(404).json({ error: 'Track not found' });
     }
 
-    res.json(track);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(200).json(track);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-//// UPDATE a track
-exports.updateTrack = async (req, res) => {
+const createTrack = async (req, res) => {
   try {
-    const track = await Track.findByPk(req.params.id);
-
-    if (!track) {
-      return res.status(404).json({ error: "Track not found" });
+    const { title, audioUrl, duration, genre, artistId } = req.body;
+    if (!title || !audioUrl || !artistId) {
+      return res.status(400).json({ error: 'title, audioUrl and artistId are required' });
     }
 
-    // NEW: If they are trying to update the artist, make sure the new artist exists
-    if (req.body.artistId) {
+    const artist = await Artist.findByPk(artistId);
+    if (!artist) {
+      return res.status(404).json({ error: 'Artist not found' });
+    }
+
+    const track = await Track.create({ title, audioUrl, duration, genre, artistId });
+    res.status(201).json(track);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const updateTrack = async (req, res) => {
+  try {
+    const track = await Track.findByPk(req.params.id);
+    if (!track) {
+      return res.status(404).json({ error: 'Track not found' });
+    }
+
+    if (req.body.artistId && req.body.artistId !== track.artistId) {
       const artist = await Artist.findByPk(req.body.artistId);
       if (!artist) {
-        return res.status(404).json({ error: "New Artist ID not found" });
+        return res.status(404).json({ error: 'New artistId does not exist' });
       }
     }
 
-    await track.update(req.body);
+    if (req.user.role !== 'admin' && req.user.id !== track.artistId) {
+      return res.status(403).json({ error: 'Forbidden: You can only update your own tracks' });
+    }
 
-    res.json(track);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    await track.update(req.body);
+    res.status(200).json(track);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
+};
+
+const deleteTrack = async (req, res) => {
+  try {
+    const track = await Track.findByPk(req.params.id);
+    if (!track) {
+      return res.status(404).json({ error: 'Track not found' });
+    }
+
+    if (req.user.role !== 'admin' && req.user.id !== track.artistId) {
+      return res.status(403).json({ error: 'Forbidden: You can only delete your own tracks' });
+    }
+
+    await track.destroy();
+    res.status(200).json({ message: 'Track deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  getTracks,
+  getTrackById,
+  createTrack,
+  updateTrack,
+  deleteTrack
 };
