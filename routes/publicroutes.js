@@ -24,7 +24,8 @@ router.get('/artists', async (req, res) => {
   }
 });
 
-route.get('/heath', (req,res) => {
+// Change the Route to Router 
+router.get('/heath', (req,res) => {
     res.status(200).json({ status: "Sound Groove API is UP and running "});
 })
 
