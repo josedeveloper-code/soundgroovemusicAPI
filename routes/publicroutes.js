@@ -24,5 +24,9 @@ router.get('/artists', async (req, res) => {
   }
 });
 
+route.get('/heath', (req,res) => {
+    res.status(200).json({ status: "Sound Groove API is UP and running "});
+})
+
 module.exports = router;
 

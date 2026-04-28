@@ -48,7 +48,7 @@ app.use("/tracks", require("./routes/trackroutes"));
 app.use("/artist", authenticate, authorize(["artist"]), require("./routes/artistroutes"));
 app.use("/admin", authenticate, authorize(["admin"]), require("./routes/adminroutes"));
 app.use("/protected", authenticate, require("./routes/protected.routes"));
-
+app.use("/auth", require("./routes/authroutes"));
 // 7. Error Handling (Last)
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
 
