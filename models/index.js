@@ -1,14 +1,18 @@
-// 1. Import the models
-const User = require('./User'); // Adjust the filename if it's 'user.js'
-const Artist = require('./Artist'); // Adjust the filename if it's 'artist.js'
+const { Sequelize } = require('sequelize');
 
-// 2. Define the Relationships
-// A User has one Artist profile (One-to-One)
-User.hasOne(Artist, { foreignKey: 'userId', onDelete: 'CASCADE' });
-Artist.belongsTo(User, { foreignKey: 'userId' });
+const sequelize = process.env.DATABASE_URL 
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false // Required for Render
+        }
+      }
+    })
+  : new Sequelize({
+      dialect: 'sqlite',
+      storage: './database.sqlite' // Falls back to sqlite for local coding
+    });
 
-// 3. Export them together
-module.exports = {
-  User,
-  Artist
-};
+module.exports = { sequelize };
