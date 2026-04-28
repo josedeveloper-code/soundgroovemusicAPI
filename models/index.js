@@ -1,12 +1,8 @@
-const User = require('./user');
-const Artist = require('./artist');
-const Track = require('./track');
+User.hasOne(Artist)
+Artist.belongsTo(User)
 
-// Define Relationships
-User.hasOne(Artist, { foreignKey: 'userId', onDelete: 'CASCADE' });
-Artist.belongsTo(User, { foreignKey: 'userId' });
+Artist.hasMany(Track)
+Track.belongsTo(Artist)
 
-Artist.hasMany(Track, { foreignKey: 'artistId', onDelete: 'CASCADE' });
-Track.belongsTo(Artist, { foreignKey: 'artistId' });
-
-module.exports = { User, Artist, Track };
+Album.hasMany(Track, { foreignKey: 'albumId', onDelete: 'CASCADE' });
+Track.belongsTo(Album, { foreignKey: 'albumId' });

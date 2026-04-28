@@ -2,66 +2,137 @@
 
 **Creator:** Jose Corril
 
-**Description:** Project for Rize
+**Description:** A REST API built with Node.js, Express, and Sequelize for a music platform. This project supports user registration, JWT authentication, role-based access control, track and artist management, and admin administration.
 
-## Project Structure
+## Features
 
-```
-soundgroovemusicAPI/
-├── models/
-│   ├── index.js
-│   ├── User.js
-│   ├── Artist.js
-│   └── Track.js
-├── routes/
-│   ├── authroutes.js
-│   ├── trackroutes.js
-│   └── publicroutes.js
-├── app.js
-├── server.js
-└── database.js
-```
+- REST API using Node.js and Express
+- Sequelize ORM with PostgreSQL / SQLite support
+- JWT-based authentication with `register` and `login`
+- Role-based authorization: `listener`, `artist`, `admin`
+- CRUD operations for `User`, `Artist`, and `Track`
+- Public and authenticated routes with proper HTTP status codes
+- Unit tests with Jest and Supertest
+- Render deployment ready with `render.yaml` and Node version pinning
 
-## Deployment Notes
+## Setup
 
-- Render must use `npm start` as the start command.
-- Do not use `node start`.
-- The project includes `render.yaml` to enforce `npm install` and `npm start`.
-- Node version is pinned via `.nvmrc` and `package.json` engines to `24.14.1`.
-- Make sure Render environment variables include:
-  - `DATABASE_URL`
-  - `JWT_SECRET`
-  - `FRONTEND_URL` (if your frontend is on a different domain)
+1. Clone the repository:
 
-## Render Deploy Checklist
+   ```bash
+   git clone <repo-url>
+   cd soundgroovemusicAPI
+   ```
 
-1. Confirm `render.yaml` is committed to the repo root.
-2. Confirm Render service uses `npm start` as its start command.
-3. Confirm `nodeVersion: 24.14.1` is set in `render.yaml`.
-4. Confirm the Render environment variables are configured:
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Copy the environment example and configure your values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Set required environment variables in `.env`:
    - `DATABASE_URL`
    - `JWT_SECRET`
    - `FRONTEND_URL` (optional)
-5. Confirm the service is pointing to the correct Git branch.
+   - `NODE_ENV` (optional)
+5. Start the app locally:
 
-**Creator:** Jose Corril
+   ```bash
+   npm run dev
+   ```
 
-**Ownership and the Creator of the App Sound Groove Music API**
+## Environment Variables
 
---- This is the project for Rize -------------------------
+```env
+DATABASE_URL=sqlite:./database.sqlite
+JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:3000
+NODE_ENV=development
+```
 
-/*
+## Running Tests
 
-soundgroovemusicAPI/
-├── models/
-│   ├── index.js      <-- This is the "model" it's looking for
-│   ├── User.js
-│   ├── Artist.js
-│   └── Track.js      (Sequelize version)
-├── routes/
-│   ├── authroutes.js  <-- This is the "route" it's looking for
-│   ├── trackroutes.js
-│   └── publicroutes.js
-├── app.js
-├── server.js
-└── database.js
+```bash
+npm test
+```
+
+The test suite uses Jest and Supertest to cover authentication and RBAC behavior.
+
+## Deployment on Render
+
+- Render uses `npm install` and `npm start`
+- The project includes `render.yaml`
+- Node version is pinned to `24.14.1`
+- Ensure Render environment variables are configured:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `FRONTEND_URL` (optional)
+
+## API Endpoints
+
+### Authentication
+
+- `POST /auth/register`
+  - Request: `{ username, email, password, role }`
+  - Roles: `listener`, `artist`, `admin`
+- `POST /auth/login`
+  - Request: `{ email, password }`
+  - Response: `{ token }`
+
+### Public routes
+
+- `GET /public/tracks`
+- `GET /public/artists`
+
+### Track management
+
+- `GET /tracks`
+- `GET /tracks/:id`
+- `POST /tracks` (artist or admin)
+- `PUT /tracks/:id` (artist or admin)
+- `DELETE /tracks/:id` (artist or admin)
+
+### Artist management
+
+- `GET /artist/me` (artist)
+- `GET /artist` (artist)
+- `POST /artist` (artist)
+- `PUT /artist/:id` (artist or admin)
+- `DELETE /artist/:id` (artist or admin)
+- `GET /artist-only/tracks` (artist)
+- `GET /artist-only/stats` (artist)
+
+### User / admin management
+
+- `GET /admin/users` (admin)
+- `GET /admin/users/:id` (admin)
+- `POST /admin/users` (admin)
+- `PUT /admin/users/:id` (admin)
+- `DELETE /admin/users/:id` (admin)
+- `GET /admin/artists` (admin)
+- `GET /admin/artists/:id` (admin)
+- `DELETE /admin/artists/:id` (admin)
+
+### Profile & protected routes
+
+- `GET /profile` (authenticated)
+- `POST /logout`
+- `GET /protected` (authenticated)
+
+## Role Definitions
+
+- `listener` – default user role, can view public tracks and artists
+- `artist` – can manage artist profile and create/update/delete tracks
+- `admin` – can manage users and artists and access admin-only endpoints
+
+## Notes
+
+- The API uses JWT in the `Authorization: Bearer <token>` header.
+- For production deployments, use `DATABASE_URL` pointing to a Postgres database.
+- The local default is SQLite via `database.sqlite`.

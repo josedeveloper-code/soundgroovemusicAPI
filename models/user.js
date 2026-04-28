@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../database'); // Adjust path to your db connection
+const sequelize = require('../database');
 
 const User = sequelize.define('User', {
   username: {
@@ -22,11 +22,13 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 'listener', // Default role for new signups
+    defaultValue: 'listener',
     validate: {
-      isIn: [['listener', 'artist', 'admin']] // The 3 roles in Sound Groove
+      isIn: [['listener', 'artist', 'admin']]
     }
   }
+}, {
+  timestamps: true
 });
 
 module.exports = User;

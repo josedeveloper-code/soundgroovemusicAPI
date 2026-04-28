@@ -1,3 +1,5 @@
+// This is my Admin Routes 
+
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
@@ -13,3 +15,4 @@ router.get('/artists/:id', adminController.getArtistById);
 router.delete('/artists/:id', adminController.deleteArtist);
 
 module.exports = router;
+

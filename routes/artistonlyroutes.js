@@ -8,3 +8,4 @@ router.get('/tracks', authenticateToken, authorize(['artist']), artistController
 router.get('/stats', authenticateToken, authorize(['artist']), artistController.getArtistStats);
 
 module.exports = router;
+
